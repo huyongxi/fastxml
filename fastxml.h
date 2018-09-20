@@ -63,6 +63,14 @@ namespace FastXml {
 			return std::move(attr_map); 
 		}
 
+		const char* attribute(const char* name) const {
+			if (!*this) {
+				std::cerr << "node not exist don¡¯t have attribute" << std::endl;
+				return "";
+			}
+			return _node->first_attribute(name)->value();
+		}
+
 		node operator[](const char* s) const {
 			if (!*this) {
 				std::cerr << "operator[]: node not exist!" << std::endl;

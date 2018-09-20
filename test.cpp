@@ -45,6 +45,7 @@ int main() {
 		}
 	});
 
+	cout << n3.attribute("type") << endl;
 
 	system("pause");
 	return 0;
