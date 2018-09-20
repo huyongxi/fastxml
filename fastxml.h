@@ -4,10 +4,32 @@
 #include <string>
 #include <iostream>
 #include <unordered_map>
+#include <functional>
 
 namespace FastXml {
 
 	using namespace rapidxml;
+
+	std::string strip(char* str) {
+		char* b = str;
+		char* e = str + strlen(str) - 1;
+		int len = e - b;
+		while (true) {
+			if (*b == ' ' || *b == '\n' || *b == '\t') {
+				++b;
+			}
+			if (*e == ' ' || *e == '\n' || *e == '\t') {
+				--e;
+			}
+			if (e - b == len) {
+				break;
+			}
+			else {
+				len = e - b;
+			}
+		}
+		return std::move(std::string(b, e + 1));
+	}
 
 	class node {
 	private:
@@ -26,10 +48,10 @@ namespace FastXml {
 
 		node& operator=(const node&) = delete;
 
-		char* name() { return _name; }
-		char* value() { return _value; }
+		char* name() const { return _name; }
+		std::string value() const { return std::move(strip(_value)); }
 
-		auto attribute() { 
+		auto attribute() const { 
 			std::unordered_map<char*, char*> attr_map;
 			if (!*this) {
 				std::cerr << "node not exist don¡¯t have attribute" << std::endl;
@@ -41,7 +63,7 @@ namespace FastXml {
 			return std::move(attr_map); 
 		}
 
-		node operator[](const char* s) {
+		node operator[](const char* s) const {
 			if (!*this) {
 				std::cerr << "operator[]: node not exist!" << std::endl;
 				return node(nullptr);
@@ -56,9 +78,16 @@ namespace FastXml {
 			}
 		}
 
-		operator bool() {
+		void for_child(const std::function<void(const node& n)>& f) const {
+			for (auto iter = _node->first_node(); iter; iter = iter->next_sibling()) {
+				f(node(iter));
+			}
+		}
+
+		operator bool() const {
 			return valid;
 		}
+
 	};
 
 	class fastxml {
@@ -72,7 +101,7 @@ namespace FastXml {
 		bool load_xml(const std::string& filename) {
 			//test
 			data = new char[100];
-			memcpy(data, "<config> <tag type=\"value\" attr=\"qbc\" >hyx  </tag> <t a=\"123\"/> </config>", 74);
+			memcpy(data, "<config> <tag type=\"value\" attr=\"qbc\" >   \n\t\t hyx   </tag> <t a=\"123\"/> </config>", 82);
 
 			doc.parse<0>(data);
 			root = doc.first_node();
@@ -85,8 +114,6 @@ namespace FastXml {
 		node operator[](const char* name) {
 			return node(doc.first_node(name));
 		}
-
-
 	};
 }
 

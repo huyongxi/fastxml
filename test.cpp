@@ -38,6 +38,12 @@ int main() {
 
 	auto n3 = n1["tag"];
 	auto m3 = n3.attribute();
+	n1.for_child([](const FastXml::node& n) {
+		cout << "name:" << n.name() << " value:" << n.value() << endl;
+		for (const auto& i : n.attribute()) {
+			cout << i.first << "=" << i.second << endl;
+		}
+	});
 
 
 	system("pause");
