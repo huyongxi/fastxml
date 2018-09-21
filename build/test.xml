@@ -1,6 +1,6 @@
 <config>
 	<tag type="value" attr="qbc">
-		hyx
+		hyx 中文
 	</tag>
-	<t a="123"/>
+	<t a="123" b = "456" c = "中文"/>
 </config>

@@ -1,6 +1,7 @@
 #ifndef __FASTXML_H__
 #define __FASTXML_H__
 #include "rapidxml.hpp"
+#include <fstream>
 #include <string>
 #include <iostream>
 #include <unordered_map>
@@ -15,10 +16,10 @@ namespace FastXml {
 		char* e = str + strlen(str) - 1;
 		int len = e - b;
 		while (true) {
-			if (*b == ' ' || *b == '\n' || *b == '\t') {
+			if (*b == ' ' || *b == '\n' || *b == '\t' || *b == '\r') {
 				++b;
 			}
-			if (*e == ' ' || *e == '\n' || *e == '\t') {
+			if (*e == ' ' || *e == '\n' || *e == '\t' || *e == '\r') {
 				--e;
 			}
 			if (e - b == len) {
@@ -101,26 +102,40 @@ namespace FastXml {
 	class fastxml {
 	private:
 		char* data = nullptr;
-		uint32_t size = 0;
+		std::size_t size = 0;
 		xml_document<> doc;
-		xml_node<>* root;
+		xml_node<>* _root;
 	public:
 		fastxml() = default;
 		bool load_xml(const std::string& filename) {
-			//test
-			data = new char[100];
-			memcpy(data, "<config> <tag type=\"value\" attr=\"qbc\" >   \n\t\t hyx   </tag> <t a=\"123\"/> </config>", 82);
+			std::ifstream ifile;
+			ifile.open(filename,std::ios::binary);
+			if (!ifile) {
+				std::cerr << "open file failed!" << std::endl;
+				return false;
+			}
+
+			std::filebuf* buf = ifile.rdbuf();
+			size = buf->pubseekoff(0, ifile.end, ifile.in);
+			buf->pubseekpos(0, ifile.in);
+			data = new char[size+1];
+			buf->sgetn(data, size);
+			data[size] = 0;
+			ifile.close();
 
 			doc.parse<0>(data);
-			root = doc.first_node();
+			_root = doc.first_node();
 			return true;
 		}
 		~fastxml() {
 			delete[] data;
 		}
-
-		node operator[](const char* name) {
+		node operator[](const char* name) const {
 			return node(doc.first_node(name));
+		}
+
+		node root() const {
+			return node(_root);
 		}
 	};
 }
