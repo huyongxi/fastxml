@@ -8,16 +8,24 @@ using namespace std;
 
 int main() {
 
-	FastXml::fastxml f;
-	f.load_xml("fastxml.vcxproj");
-	auto n1 = f.root();
-	cout << n1.name() << " " << n1.value() << endl;
-	n1.for_child([](const FastXml::node& n) {
-		cout << "name:" << n.name() << " value:" << n.value() << endl;
-		for (const auto& i : n.attribute()) {
-			cout << i.first << "=" << i.second << endl;
+	cout << FastXml::to_number<double>("3435.56") << endl;
+
+	{
+		FastXml::fastxml xml;
+		xml.load_xml("SkillC1fg.xml");
+		if (!xml) {
+			return -1;
 		}
-	});
+		auto cfg = xml["SkillCfg"];
+		if (cfg) {
+			cfg.for_child([](const FastXml::node& n) {
+				cout << "un32ID " << n.attribute("un32ID") << endl;
+				n.for_child([](const FastXml::node& n) {
+					cout << n.name() << " " << n.value() << endl;
+				});
+			});
+		}
+	}
 	system("pause");
 	return 0;
 }

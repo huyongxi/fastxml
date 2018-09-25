@@ -6,6 +6,7 @@
 #include <iostream>
 #include <unordered_map>
 #include <functional>
+#include <cstdlib>
 
 namespace FastXml {
 
@@ -32,6 +33,21 @@ namespace FastXml {
 		return std::move(std::string(b, e + 1));
 	}
 
+	template<typename T>
+	T to_number(const char* str)
+	{
+		if (std::is_same<T, double>::value || std::is_same<T, float>::value) {
+			return atof(str);
+		}
+		else if (sizeof(T) >= 8) {
+			return atoll(str);
+		}
+		else {
+			return atoi(str);
+		}
+	}
+
+
 	class node {
 	private:
 		xml_node<>* _node;
@@ -55,7 +71,7 @@ namespace FastXml {
 		auto attribute() const { 
 			std::unordered_map<char*, char*> attr_map;
 			if (!*this) {
-				std::cerr << "node not exist don¡¯t have attribute" << std::endl;
+				std::cerr << "[error:]" << "node not exist don¡¯t have attribute" << std::endl;
 				return attr_map;
 			}
 			for (auto* iter = _node->first_attribute(); iter; iter = iter->next_attribute()) {
@@ -66,15 +82,20 @@ namespace FastXml {
 
 		const char* attribute(const char* name) const {
 			if (!*this) {
-				std::cerr << "node not exist don¡¯t have attribute" << std::endl;
+				std::cerr << "[error:]" << "node not exist don¡¯t have attribute" << std::endl;
 				return "";
 			}
-			return _node->first_attribute(name)->value();
+			auto attr = _node->first_attribute(name);
+			if (!attr) {
+				std::cerr << "[error:]" << _name << " don¡¯t have attribute " << name << std::endl;
+				return "";
+			}
+			return attr->value();
 		}
 
 		node operator[](const char* s) const {
 			if (!*this) {
-				std::cerr << "operator[]: node not exist!" << std::endl;
+				std::cerr << "[error:]" << "operator[]: node not exist!" << std::endl;
 				return node(nullptr);
 			}
 			xml_node<>* child = _node->first_node(s);
@@ -82,7 +103,7 @@ namespace FastXml {
 				return node(child);
 			}
 			else {
-				std::cerr << _name << " don¡¯t have child node " << s << std::endl;
+				std::cerr << "[error:]" << _name << " don¡¯t have child node " << s << std::endl;
 				return node(nullptr);
 			}
 		}
@@ -103,15 +124,17 @@ namespace FastXml {
 	private:
 		char* data = nullptr;
 		std::size_t size = 0;
+		bool valid = false;
 		xml_document<> doc;
 		xml_node<>* _root;
+		
 	public:
 		fastxml() = default;
 		bool load_xml(const std::string& filename) {
 			std::ifstream ifile;
 			ifile.open(filename,std::ios::binary);
 			if (!ifile) {
-				std::cerr << "open file failed!" << std::endl;
+				std::cerr << "[error:]" << "open file failed!" << std::endl;
 				return false;
 			}
 
@@ -125,6 +148,7 @@ namespace FastXml {
 
 			doc.parse<0>(data);
 			_root = doc.first_node();
+			valid = true;
 			return true;
 		}
 		~fastxml() {
@@ -136,6 +160,10 @@ namespace FastXml {
 
 		node root() const {
 			return node(_root);
+		}
+
+		operator bool() const {
+			return valid;
 		}
 	};
 }
