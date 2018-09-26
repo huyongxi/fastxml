@@ -15,7 +15,7 @@ namespace FastXml {
 	std::string strip(char* str) {
 		char* b = str;
 		char* e = str + strlen(str) - 1;
-		int len = e - b;
+		int64_t len = e - b;
 		while (true) {
 			if (*b == ' ' || *b == '\n' || *b == '\t' || *b == '\r') {
 				++b;
@@ -34,7 +34,7 @@ namespace FastXml {
 	}
 
 	template<typename T>
-	T to_number(const char* str)
+	inline T to_number(const char* str)
 	{
 		if (std::is_same<T, double>::value || std::is_same<T, float>::value) {
 			return atof(str);
@@ -132,7 +132,7 @@ namespace FastXml {
 		fastxml() = default;
 		bool load_xml(const std::string& filename) {
 			std::ifstream ifile;
-			ifile.open(filename,std::ios::binary);
+			ifile.open(filename, std::ifstream::binary);
 			if (!ifile) {
 				std::cerr << "[error:]" << "open file failed!" << std::endl;
 				return false;

@@ -12,7 +12,7 @@ int main() {
 
 	{
 		FastXml::fastxml xml;
-		xml.load_xml("SkillC1fg.xml");
+		xml.load_xml("SkillCfg.xml");
 		if (!xml) {
 			return -1;
 		}
@@ -25,6 +25,15 @@ int main() {
 				});
 			});
 		}
+	}
+
+	{
+
+		using namespace FastXml;
+		fastxml fxml;
+		fxml.load_xml("");
+
+
 	}
 	system("pause");
 	return 0;
