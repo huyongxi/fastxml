@@ -50,28 +50,34 @@ namespace FastXml {
 
 	class node {
 	private:
-		xml_node<>* _node;
-		char* _name = nullptr;
-		char* _value = nullptr;
+		xml_node<>* _node = nullptr;
 		bool valid = false;
 	public:
-		node(xml_node<>* p) :_node(p){
-			if (_node != nullptr) {
-				valid = true;
-				_name = _node->name();
-				_value = _node->value();
-			}
+		node(xml_node<>* p) :_node(p) {
+			if (_node) { valid = true; }
 		}
 
 		node& operator=(const node&) = delete;
 
-		char* name() const { return _name; }
-		std::string value() const { return std::move(strip(_value)); }
+		char* name() const { 
+			if (valid) {
+				return _node->name();
+			}
+			std::cerr << "[error:] " << "node not exist don¡¯t have name" << std::endl;
+			return nullptr;
+		}
+		std::string value() const { 
+			if (valid) {
+				return std::move(strip(_node->value()));
+			}
+			std::cerr << "[error:] " << "node not exist don¡¯t have value" << std::endl;
+			return std::string();
+		}
 
 		auto attribute() const { 
 			std::unordered_map<char*, char*> attr_map;
 			if (!*this) {
-				std::cerr << "[error:]" << "node not exist don¡¯t have attribute" << std::endl;
+				std::cerr << "[error:] " << "node not exist don¡¯t have attribute" << std::endl;
 				return attr_map;
 			}
 			for (auto* iter = _node->first_attribute(); iter; iter = iter->next_attribute()) {
@@ -82,20 +88,20 @@ namespace FastXml {
 
 		const char* attribute(const char* name) const {
 			if (!*this) {
-				std::cerr << "[error:]" << "node not exist don¡¯t have attribute" << std::endl;
-				return "";
+				std::cerr << "[error:] " << "node not exist don¡¯t have attribute" << std::endl;
+				return nullptr;
 			}
 			auto attr = _node->first_attribute(name);
 			if (!attr) {
-				std::cerr << "[error:]" << _name << " don¡¯t have attribute " << name << std::endl;
-				return "";
+				std::cerr << "[error:] " << this->name() << " don¡¯t have attribute " << name << std::endl;
+				return nullptr;
 			}
 			return attr->value();
 		}
 
 		node operator[](const char* s) const {
 			if (!*this) {
-				std::cerr << "[error:]" << "operator[]: node not exist!" << std::endl;
+				std::cerr << "[error:] " << "operator[]: node not exist!" << std::endl;
 				return node(nullptr);
 			}
 			xml_node<>* child = _node->first_node(s);
@@ -103,7 +109,7 @@ namespace FastXml {
 				return node(child);
 			}
 			else {
-				std::cerr << "[error:]" << _name << " don¡¯t have child node " << s << std::endl;
+				std::cerr << "[error:] " << name() << " don¡¯t have child node " << s << std::endl;
 				return node(nullptr);
 			}
 		}
@@ -134,7 +140,7 @@ namespace FastXml {
 			std::ifstream ifile;
 			ifile.open(filename, std::ifstream::binary);
 			if (!ifile) {
-				std::cerr << "[error:]" << "open file failed!" << std::endl;
+				std::cerr << "[error:] " << "open file failed!" << std::endl;
 				return false;
 			}
 

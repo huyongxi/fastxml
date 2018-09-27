@@ -8,8 +8,6 @@ using namespace std;
 
 int main() {
 
-	cout << FastXml::to_number<double>("3435.56") << endl;
-
 	{
 		FastXml::fastxml xml;
 		xml.load_xml("SkillCfg.xml");
@@ -19,7 +17,8 @@ int main() {
 		auto cfg = xml["SkillCfg"];
 		if (cfg) {
 			cfg.for_child([](const FastXml::node& n) {
-				cout << "un32ID " << n.attribute("un32ID") << endl;
+				auto s = n.attribute("un32ID");
+				cout << "un32ID " << (s ? s : "") << endl;
 				n.for_child([](const FastXml::node& n) {
 					cout << n.name() << " " << n.value() << endl;
 				});
@@ -27,14 +26,6 @@ int main() {
 		}
 	}
 
-	{
-
-		using namespace FastXml;
-		fastxml fxml;
-		fxml.load_xml("");
-
-
-	}
 	system("pause");
 	return 0;
 }
